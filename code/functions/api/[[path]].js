@@ -18,7 +18,7 @@ export async function onRequest(context) {
   let apiUrl =
     firstPartOfHost === 'nuvla-ui'
       ? procutionApiEndpoint
-      : env[firstPartOfHost] || env['staging'] || 'https://nuvla.io';
+      : env[firstPartOfHost] || env['staging'] || procutionApiEndpoint;
 
   let response = await fetch(apiUrl + url.pathname, request);
 
