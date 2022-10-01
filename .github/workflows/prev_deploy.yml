@@ -15,6 +15,7 @@ jobs:
     permissions:
       contents: read
       deployments: write
+      pull-requests: write
     steps:
       - name: Await CF Pages
         uses: WalshyDev/cf-pages-await@v1
