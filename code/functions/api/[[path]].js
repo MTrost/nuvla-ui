@@ -10,15 +10,9 @@ export async function onRequest(context) {
   } = context;
   const url = new URL(request.url);
 
-  const firstPartOfHost = url.host.split('.')[0];
+  const apiEndpoint = env.API_ENDPOINT || 'https://example.io';
 
-  const preprodApiEndpoint = 'https://preprod.nuvla.io';
-
-  // try get api endpoint from environment or staging for preview depoyments, if present
-  let apiUrl =
-    firstPartOfHost === 'nuvla-ui' ? preprodApiEndpoint : env[firstPartOfHost] || env['staging'] || preprodApiEndpoint;
-
-  let response = await fetch(apiUrl + url.pathname, request);
+  let response = await fetch(apiEndpoint + url.pathname, request);
 
   // override base-uri for /api/cloud-entry-point responses
   if (url.pathname.includes('cloud-entry-point')) {
