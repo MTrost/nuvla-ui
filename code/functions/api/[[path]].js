@@ -12,13 +12,11 @@ export async function onRequest(context) {
 
   const firstPartOfHost = url.host.split('.')[0];
 
-  const procutionApiEndpoint = 'https://nuvla.io';
+  const preprodApiEndpoint = 'https://preprod.nuvla.io';
 
   // try get api endpoint from environment or staging for preview depoyments, if present
   let apiUrl =
-    firstPartOfHost === 'nuvla-ui'
-      ? procutionApiEndpoint
-      : env[firstPartOfHost] || env['staging'] || procutionApiEndpoint;
+    firstPartOfHost === 'nuvla-ui' ? preprodApiEndpoint : env[firstPartOfHost] || env['staging'] || preprodApiEndpoint;
 
   let response = await fetch(apiUrl + url.pathname, request);
 
