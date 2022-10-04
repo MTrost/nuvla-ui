@@ -13,7 +13,7 @@ export async function onRequest(context) {
   const { path } = params;
   const [firstPathPart] = path;
 
-  const apiEndpoint = env.API_ENDPOINT || 'https://example.io';
+  const apiEndpoint = env.API_ENDPOINT || 'https://nuvla.io';
 
   let response = await fetch(apiEndpoint + url.pathname, request);
 
