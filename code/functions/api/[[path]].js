@@ -10,14 +10,29 @@ export async function onRequest(context) {
   } = context;
   const url = new URL(request.url);
 
+  const { path } = params;
+  const [firstPathPart] = path;
+
   const apiEndpoint = env.API_ENDPOINT || 'https://example.io';
 
   let response = await fetch(apiEndpoint + url.pathname, request);
 
   // override base-uri for /api/cloud-entry-point responses
-  if (url.pathname.includes('cloud-entry-point')) {
+  if (firstPathPart === 'cloud-entry-point') {
     let body = await response.json();
     body = { ...body, 'base-uri': url.origin + '/api/' };
+    return new Response(JSON.stringify(body));
+  }
+
+  // override location for /api/session responses from POSTs
+  if (firstPathPart === 'session' && request.method === 'POST') {
+    let body = await response.json();
+    if (body.location) {
+      let locationUrl = new URL(body.location);
+      locationUrl.host = url.host;
+      locationUrl.protocol = url.protocol;
+      body = { ...body, location: locationUrl };
+    }
     return new Response(JSON.stringify(body));
   }
 
