@@ -10,23 +10,36 @@ export async function onRequest(context) {
   } = context;
   const url = new URL(request.url);
 
-  const firstPartOfHost = url.host.split('.')[0];
+  const { path } = params;
+  const [firstPathPart] = path;
 
-  const procutionApiEndpoint = 'https://nuvla.io';
+  const apiEndpoint = env.API_ENDPOINT || 'https://nuvla.io';
 
-  // try get api endpoint from environment or staging for preview depoyments, if present
-  let apiUrl =
-    firstPartOfHost === 'nuvla-ui'
-      ? procutionApiEndpoint
-      : env[firstPartOfHost] || env['staging'] || 'https://nuvla.io';
-
-  let response = await fetch(apiUrl + url.pathname, request);
+  let response = await fetch(apiEndpoint + url.pathname, request);
 
   // override base-uri for /api/cloud-entry-point responses
-  if (url.pathname.includes('cloud-entry-point')) {
+  if (firstPathPart === 'cloud-entry-point') {
     let body = await response.json();
     body = { ...body, 'base-uri': url.origin + '/api/' };
     return new Response(JSON.stringify(body));
+  }
+
+  // override all location responses for /api/session
+  try {
+    let body = await response.json();
+    if (body.location) {
+      let locationUrl = new URL(body.location);
+      locationUrl.host = url.host;
+      locationUrl.protocol = url.protocol;
+      body = { ...body, location: locationUrl };
+    }
+    const newResponse = new Response(JSON.stringify(body));
+    if (response.headers.has('set-cookie')) {
+      newResponse.headers.set('set-cookie', response.headers.get('set-cookie'));
+    }
+    return newResponse;
+  } catch (e) {
+    console.error(e);
   }
 
   return response;
