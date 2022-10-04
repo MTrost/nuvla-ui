@@ -24,8 +24,8 @@ export async function onRequest(context) {
     return new Response(JSON.stringify(body));
   }
 
-  // override location for /api/session responses from POSTs
-  if (firstPathPart === 'session' && request.method === 'POST') {
+  // override all location responses for /api/session
+  try {
     let body = await response.json();
     if (body.location) {
       let locationUrl = new URL(body.location);
@@ -33,7 +33,13 @@ export async function onRequest(context) {
       locationUrl.protocol = url.protocol;
       body = { ...body, location: locationUrl };
     }
-    return new Response(JSON.stringify(body));
+    const newResponse = new Response(JSON.stringify(body));
+    if (response.headers.has('set-cookie')) {
+      newResponse.headers.set('set-cookie', response.headers.get('set-cookie'));
+    }
+    return newResponse;
+  } catch (e) {
+    console.error(e);
   }
 
   return response;
